@@ -2,8 +2,8 @@
 public class AVLNode
 {
     public string data; // Pregunta o respuesta
-    public AVLNode left; // Subárbol izquierdo
-    public AVLNode right; // Subárbol derecho
+    public AVLNode left; // Subarbol izquierdo
+    public AVLNode right; // Subarbol derecho
     public int height; // Altura del nodo
 
     public AVLNode(string data)
