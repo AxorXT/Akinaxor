@@ -11,7 +11,6 @@ public class Akinaxor : MonoBehaviour
     public GameObject inputPanel; // Panel para ingresar nueva información
     public TMP_InputField inputNewObject; // Campo para ingresar el nuevo objeto
     public TMP_InputField inputNewQuestion; // Campo para ingresar la nueva pregunta
-    public TMP_InputField inputAnswer; // Campo para ingresar respuesta "Sí" o "No"
     public GameObject restartButton;
 
     public Button btnSi;  // Botón de "Sí"
@@ -28,6 +27,7 @@ public class Akinaxor : MonoBehaviour
     private AVLNode currentNode;
     private string filePath;
     private bool isGamePaused = false;
+    private string lastAnswer = "";  // Variable para almacenar la última respuesta ("Sí" o "No")
 
     private void Start()
     {
@@ -40,7 +40,7 @@ public class Akinaxor : MonoBehaviour
         }
         else
         {
-            tree.root = tree.Insert(tree.root, "¿Es un animal?");
+            tree.root = tree.Insert(tree.root, "Es un animal");
             tree.root.left = new AVLNode("un perro");
             tree.root.right = new AVLNode("una computadora");
         }
@@ -62,6 +62,8 @@ public class Akinaxor : MonoBehaviour
     public void AnswerYes()
     {
         if (isGamePaused) return;
+
+        lastAnswer = "Si";  // Actualizar la respuesta como "Sí"
 
         // Cambiar imagen a la de "Sí"
         currentImageIndex = (currentImageIndex + 1) % imagesYes.Length;
@@ -92,6 +94,8 @@ public class Akinaxor : MonoBehaviour
     {
         if (isGamePaused) return;
 
+        lastAnswer = "No";  // Actualizar la respuesta como "No"
+
         // Cambiar imagen a la de "No"
         currentImageIndex = (currentImageIndex + 1) % imagesNo.Length;
         canvasImage.sprite = imagesNo[currentImageIndex];
@@ -114,13 +118,13 @@ public class Akinaxor : MonoBehaviour
 
     private void ShowCurrentQuestion()
     {
-        if (currentNode.left == null && currentNode.right == null)
+        if (currentNode.left == null && currentNode.right == null) // Si es una respuesta (hoja)
         {
-            questionText.text = "¿Es " + currentNode.data + "?";
+            questionText.text = "¿Es " + currentNode.data + "?";  // Muestra la respuesta sin signo de interrogación
         }
-        else
+        else // Si es una pregunta
         {
-            questionText.text = currentNode.data;
+            questionText.text = "¿" + currentNode.data + "?"; // Añadir el signo de interrogación a las preguntas
         }
     }
 
@@ -133,36 +137,36 @@ public class Akinaxor : MonoBehaviour
 
     public void AddNewQuestionAndAnswer()
     {
-        string newObject = inputNewObject.text;
-        string newQuestion = inputNewQuestion.text;
-        string answer = inputAnswer.text.Trim().ToLower();
+        string newObject = inputNewObject.text.Trim();    // Objeto nuevo introducido
+        string newQuestion = inputNewQuestion.text.Trim();  // Pregunta nueva introducida
 
-        if (!string.IsNullOrEmpty(newObject) && !string.IsNullOrEmpty(newQuestion) && (answer == "si" || answer == "no"))
+        if (!string.IsNullOrEmpty(newObject) && !string.IsNullOrEmpty(newQuestion))
         {
-            // Agregar la nueva pregunta y respuesta al árbol
-            AVLNode newNode = new AVLNode(newObject);
-            AVLNode oldNode = new AVLNode(currentNode.data);
+            // Crear los nuevos nodos
+            AVLNode newNode = new AVLNode(newObject);  // Nodo del nuevo objeto
+            AVLNode oldNode = new AVLNode(currentNode.data);  // Nodo antiguo con el dato actual
 
+            // Actualizar el nodo actual con la nueva pregunta y sus respuestas
             currentNode.data = newQuestion;
 
-            if (answer == "si")
+            if (lastAnswer == "Si")
             {
-                currentNode.left = newNode;
-                currentNode.right = oldNode;
+                currentNode.left = oldNode; // La pregunta anterior queda en la rama "Sí"
+                currentNode.right = newNode; // La respuesta nueva queda en la rama "No"
             }
-            else
+            else if (lastAnswer == "No")
             {
-                currentNode.left = oldNode;
-                currentNode.right = newNode;
+                currentNode.left = newNode;  // La respuesta nueva queda en la rama "Sí"
+                currentNode.right = oldNode; // La pregunta anterior queda en la rama "No"
             }
 
-            inputPanel.SetActive(false);  // Desactivar solo después de agregar la nueva pregunta/respuesta
+            // Ocultar el panel de entrada y continuar el juego
+            inputPanel.SetActive(false);
             questionText.text = "¡Gracias! He aprendido algo nuevo.";
 
+            // Habilitar los botones y restablecer la imagen predeterminada
             btnSi.interactable = true;
             btnNo.interactable = true;
-
-            // Restablecer la imagen por defecto
             SetImageDefault();
         }
         else
@@ -230,7 +234,7 @@ public class Akinaxor : MonoBehaviour
             File.Delete(filePath);
         }
 
-        tree.root = tree.Insert(null, "¿Es un animal?");
+        tree.root = tree.Insert(null, "Es un animal");
         tree.root.left = new AVLNode("un perro");
         tree.root.right = new AVLNode("una computadora");
 
@@ -245,7 +249,6 @@ public class Akinaxor : MonoBehaviour
         inputPanel.SetActive(false);
         inputNewObject.text = "";
         inputNewQuestion.text = "";
-        inputAnswer.text = "";
         ShowCurrentQuestion();
 
         btnSi.interactable = true;

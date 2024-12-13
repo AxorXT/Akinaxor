@@ -45,23 +45,39 @@ public class AVLTree
     public AVLNode Insert(AVLNode node, string data)
     {
         if (node == null)
+        {
             return new AVLNode(data);
+        }
 
         if (string.Compare(data, node.data) < 0)
+        {
             node.left = Insert(node.left, data);
+        }
         else if (string.Compare(data, node.data) > 0)
+        {
             node.right = Insert(node.right, data);
+        }
         else
-            return node;
+        {
+            return node; // Evitar duplicados
+        }
 
+        // Actualizar altura
         node.height = 1 + Math.Max(Height(node.left), Height(node.right));
+
+        // Calcular balance
         int balance = GetBalance(node);
 
+        // Aplicar rotaciones según el caso
         if (balance > 1 && string.Compare(data, node.left.data) < 0)
+        {
             return RotateRight(node);
+        }
 
         if (balance < -1 && string.Compare(data, node.right.data) > 0)
+        {
             return RotateLeft(node);
+        }
 
         if (balance > 1 && string.Compare(data, node.left.data) > 0)
         {
